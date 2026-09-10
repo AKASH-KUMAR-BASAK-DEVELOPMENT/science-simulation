@@ -1,0 +1,144 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Soft Lab — a friendly, rounded edtech theme.
+   Airy off-white with floating aurora blobs, gradient headline
+   type in a rounded display face, pill controls, and soft
+   diffuse-shadow cards with lots of whitespace.
+   ============================================================ */
+
+:root {
+  --bg: #f6f7ff;
+  --card: #ffffff;
+  --ink: #1c1935;
+  --muted: #6d6b8c;
+  --primary: #6d5efc; /* indigo-violet */
+  --primary-2: #b163ff; /* violet-magenta */
+  --accent: #23c9a7; /* mint */
+  --line: rgba(28, 25, 53, 0.06); /* hairline border / ring */
+
+  --background: var(--bg);
+  --foreground: var(--ink);
+  color-scheme: light;
+}
+
+/* dark palette — same soft-lab identity, deep-indigo surfaces */
+.dark {
+  --bg: #0b0e1e;
+  --card: #161a33;
+  --ink: #ecebff;
+  --muted: #9c9ac6;
+  --primary: #8b7dff;
+  --primary-2: #c07bff;
+  --accent: #2fe0bb;
+  --line: rgba(255, 255, 255, 0.09);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-bg: var(--bg);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary2: var(--primary-2);
+  --color-accent: var(--accent);
+  --color-line: var(--line);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-round: var(--font-fredoka);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+::-webkit-scrollbar { width: 12px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d3d1f2; border-radius: 999px; border: 3px solid var(--bg); }
+::-webkit-scrollbar-thumb:hover { background: #b8b4f0; }
+.dark ::-webkit-scrollbar-thumb { background: #2c2f52; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #3a3d63; }
+
+/* ---- soft card lift ---- */
+.lift { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+
+/* ---- animations ---- */
+@keyframes spin { to { transform: rotate(360deg); } }
+.animate-spin-slow { animation: spin 18s linear infinite; }
+.animate-spin-rev { animation: spin 26s linear infinite reverse; }
+
+@keyframes floaty { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+.animate-floaty { animation: floaty 6s ease-in-out infinite; }
+
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(24px, -30px) scale(1.08); }
+  66% { transform: translate(-20px, 18px) scale(0.95); }
+}
+.animate-drift { animation: drift 20s ease-in-out infinite; }
+
+@keyframes bar { 0%, 100% { transform: scaleY(0.25); } 50% { transform: scaleY(1); } }
+.animate-bar { animation: bar 1.1s ease-in-out infinite; transform-origin: bottom; }
+
+@keyframes ripple { 0% { transform: scale(0.2); opacity: 0.7; } 100% { transform: scale(1); opacity: 0; } }
+.animate-ripple { animation: ripple 3s ease-out infinite; }
+
+@keyframes pulseSoft { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.65; transform: scale(0.88); } }
+.animate-pulse-soft { animation: pulseSoft 2.4s ease-in-out infinite; }
+
+/* ---- navbar animated icons ---- */
+.nav-ic { overflow: visible; }
+
+/* spinning atom orbits + electron */
+@keyframes navOrbit { to { transform: rotate(360deg); } }
+.nav-orbit { transform-box: fill-box; transform-origin: center; animation: navOrbit 9s linear infinite; }
+.group:hover .nav-orbit { animation-duration: 2.4s; }
+
+/* rising bubbles in the flask */
+@keyframes navBubble {
+  0%   { transform: translateY(0) scale(0.4); opacity: 0; }
+  25%  { opacity: 1; }
+  100% { transform: translateY(-7px) scale(1); opacity: 0; }
+}
+.nav-bub { transform-box: fill-box; transform-origin: center; animation: navBubble 2.6s ease-in-out infinite; }
+.nav-bub2 { animation-delay: 0.9s; }
+.nav-bub3 { animation-delay: 1.7s; }
+.group:hover .nav-bub { animation-duration: 1.3s; }
+
+/* gently nodding microscope */
+@keyframes navNod { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-9deg); } }
+.nav-scope { transform-box: fill-box; transform-origin: 50% 100%; animation: navNod 3.6s ease-in-out infinite; }
+.group:hover .nav-scope { animation-duration: 1.4s; }
+
+/* scroll reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.reveal.is-visible { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .animate-spin-slow, .animate-spin-rev, .animate-floaty, .animate-drift,
+  .animate-bar, .animate-ripple, .animate-pulse-soft,
+  .nav-orbit, .nav-bub, .nav-scope { animation: none; }
+}
