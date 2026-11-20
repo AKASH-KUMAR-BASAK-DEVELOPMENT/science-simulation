@@ -366,7 +366,7 @@ export default function HomeClient() {
       <div className="scroll-progress" style={{ width: progress + "%" }} aria-hidden="true"></div>
 
       <header className={"nav" + (navScrolled ? " scrolled" : "")}>
-        <a className="brand" href="#top" aria-label="Quantum Lab home">
+        <a className="brand" href="#top" aria-label="Experiverse home">
           <span className="brand-mark" aria-hidden="true">
             <svg viewBox="0 0 48 48" width="30" height="30">
               <g fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
@@ -377,7 +377,7 @@ export default function HomeClient() {
               </g>
             </svg>
           </span>
-          <span className="brand-text">Quantum<b>Lab</b></span>
+          <span className="brand-text">Experi<b>verse</b></span>
         </a>
 
         <nav className={"nav-links" + (mobileOpen ? " mobile-open" : "")} aria-label="Primary">
@@ -614,7 +614,7 @@ export default function HomeClient() {
                   </g>
                 </svg>
               </span>
-              <span className="brand-text">Quantum<b>Lab</b></span>
+              <span className="brand-text">Experi<b>verse</b></span>
             </a>
             <p>Interactive science simulations for the next generation of explorers.</p>
           </div>
@@ -638,7 +638,7 @@ export default function HomeClient() {
           </div>
         </div>
         <div className="footer-bottom">
-          <span>© 2026 Quantum Lab. Made with curiosity.</span>
+          <span>© 2026 Experiverse. Made with curiosity.</span>
           <span className="footer-badge">◈ Rendered in real time</span>
         </div>
       </footer>

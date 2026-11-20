@@ -1,9 +1,9 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Quantum Lab · Interactive Science Simulations",
+  title: "Experiverse · Interactive Science Simulations",
   description:
-    "Quantum Lab — an interactive playground for physics, chemistry, biology and astronomy simulations. Explore science in your browser.",
+    "Experiverse — an interactive playground for physics, chemistry, biology and astronomy simulations. Explore science in your browser.",
 };
 
 export default function RootLayout({ children }) {
