@@ -7,7 +7,6 @@ import CommandPalette from "./CommandPalette";
 import Toast from "./Toast";
 import useSound from "./useSound";
 import useConfetti from "./Confetti";
-import VisitorCounter from "./VisitorCounter";
 
 const PALETTES = [
   { name: "Nebula", a: "#5b8cff", b: "#a06bff", c: "#2ad4d4" },
@@ -703,7 +702,6 @@ export default function HomeClient() {
         </div>
         <div className="footer-bottom">
           <span>© 2026 Experiverse. Made with curiosity.</span>
-          <VisitorCounter />
           <span className="footer-badge">◈ Rendered in real time</span>
         </div>
       </footer>
