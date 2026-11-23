@@ -1,29 +1,37 @@
-import { getTurso } from "./turso";
+import fs from "fs";
+import path from "path";
 
-export async function recordVisit(path) {
-  const turso = getTurso();
-  await turso.execute({
-    sql: `
-      INSERT INTO page_visits (path, count, last_visited)
-      VALUES (?, 1, CURRENT_TIMESTAMP)
-      ON CONFLICT(path) DO UPDATE SET
-        count = count + 1,
-        last_visited = CURRENT_TIMESTAMP
-    `,
-    args: [path],
-  });
+const DATA_FILE = path.join(process.cwd(), "data", "visits.json");
+
+function readData() {
+  try {
+    return JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
+  } catch {
+    return {};
+  }
+}
+
+function writeData(data) {
+  fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
+  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+}
+
+export async function recordVisit(route) {
+  const data = readData();
+  const entry = data[route] || { count: 0, last_visited: null };
+  entry.count += 1;
+  entry.last_visited = new Date().toISOString();
+  data[route] = entry;
+  writeData(data);
 }
 
 export async function getVisitStats() {
-  const turso = getTurso();
-  const result = await turso.execute(
-    "SELECT path, count, last_visited FROM page_visits ORDER BY count DESC"
-  );
-  const rows = result.rows.map((r) => ({
-    path: r.path,
-    count: Number(r.count),
-    last_visited: r.last_visited,
+  const data = readData();
+  const pages = Object.entries(data).map(([route, entry]) => ({
+    route,
+    count: entry.count,
+    last_visited: entry.last_visited,
   }));
-  const total = rows.reduce((sum, r) => sum + r.count, 0);
-  return { total, pages: rows };
+  const total = pages.reduce((sum, p) => sum + p.count, 0);
+  return { total, pages };
 }
