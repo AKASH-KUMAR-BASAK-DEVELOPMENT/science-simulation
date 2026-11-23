@@ -289,7 +289,10 @@ export default function Playground({ sound }) {
 
     function getWHD() { return { W, H, DPR }; }
     function size() {
-      DPR = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      // mobile address-bar slides fire resize without changing the canvas; don't reseed then
+      if (dpr === DPR && demo.clientWidth * dpr === W && demo.clientHeight * dpr === H) return;
+      DPR = dpr;
       W = demo.width = demo.clientWidth * DPR;
       H = demo.height = demo.clientHeight * DPR;
       current?.resize?.();
@@ -355,6 +358,11 @@ export default function Playground({ sound }) {
       if (hint) hint.textContent = current.hint;
       if (desc) desc.textContent = current.desc;
       Object.entries(tabRefs.current).forEach(([key, el]) => el?.classList.toggle("active", key === k));
+      // on phones the tabs are a swipeable row; keep the active one centred
+      const tab = tabRefs.current[k], row = tab?.parentElement;
+      if (row && row.scrollWidth > row.clientWidth) {
+        row.scrollTo({ left: tab.offsetLeft - (row.clientWidth - tab.offsetWidth) / 2, behavior: "smooth" });
+      }
       if (!raf) frame();
     }
 

@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import Playground from "./simulations/Playground";
 import CommandPalette from "./CommandPalette";
 import Toast from "./Toast";
 import useSound from "./useSound";
 import useConfetti from "./Confetti";
+import MobileTabBar from "./MobileTabBar";
 
 const PALETTES = [
   { name: "Nebula", a: "#5b8cff", b: "#a06bff", c: "#2ad4d4" },
@@ -15,7 +15,17 @@ const PALETTES = [
   { name: "Solar", a: "#ffb454", b: "#ff6b3d", c: "#ff6bb5" },
 ];
 
-const GLYPHS = "!<>-_\\/[]{}—=+*^?#01";
+// shared by the desktop dropdown and the mobile sheet
+const DISCIPLINES = [
+  { key: "physics", title: "Physics", sub: "Motion, forces & energy", icon: <g fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" /><ellipse cx="12" cy="12" rx="9.5" ry="4" /><ellipse cx="12" cy="12" rx="9.5" ry="4" transform="rotate(60 12 12)" /><ellipse cx="12" cy="12" rx="9.5" ry="4" transform="rotate(120 12 12)" /></g> },
+  { key: "chemistry", title: "Chemistry", sub: "Reactions & molecules", icon: <g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 2.5h6" /><path d="M10 2.5v6.2L4.8 18a2 2 0 0 0 1.8 2.9h10.8a2 2 0 0 0 1.8-2.9L14 8.7V2.5" /><path d="M7.5 15h9" /></g> },
+  { key: "biology", title: "Biology", sub: "Cells, genes & growth", icon: <g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M7 3c0 7 10 11 10 18" /><path d="M17 3c0 7-10 11-10 18" /><path d="M8 7h8M7.3 12h9.4M8 17h8" /></g> },
+  { key: "geographic", title: "Geographic", sub: "Earth & climate systems", icon: <g fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="9.5" /><ellipse cx="12" cy="12" rx="4.2" ry="9.5" /><path d="M2.5 12h19M3.8 7.5h16.4M3.8 16.5h16.4" strokeLinecap="round" /></g> },
+  { key: "history", title: "History", sub: "Timelines & civilizations", icon: <g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8.5L12 4l9 4.5" /><path d="M4.5 8.5v10M9.5 8.5v10M14.5 8.5v10M19.5 8.5v10" /><path d="M3 20h18" /></g> },
+  { key: "philosophy", title: "Philosophy", sub: "Logic & thought experiments", icon: <g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v4" /><path d="M7 7h10l1.5 7a5.5 5.5 0 0 1-11 0L9 7" /><path d="M9.5 20.5h5" /></g> },
+];
+
+const GLYPHS ="!<>-_\\/[]{}—=+*^?#01";
 
 const SIM_CARDS = [
   { cat: "physics", accent: "#5b8cff", icon: "⚛️", title: "Particle Physics", desc: "Collide, bond and scatter thousands of particles under real force fields and gravity.", tags: ["Newtonian", "N-body"], href: null },
@@ -37,7 +47,7 @@ export default function HomeClient() {
   const [accentIdx, setAccentIdx] = useState(0);
   const [navScrolled, setNavScrolled] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [cmdkOpen, setCmdkOpen] = useState(false);
   const [ctaNote, setCtaNote] = useState("Free forever for students. No credit card.");
   const prefersReducedRef = useRef(false);
@@ -73,9 +83,12 @@ export default function HomeClient() {
     const field = document.getElementById("field");
     if (field && !prefersReduced) {
       const ctx = field.getContext("2d");
-      let w, h, dpr, particles = [];
+      let w, h, dpr, particles = [], lastW = 0, lastH = 0;
       const mouse = { x: -9999, y: -9999 };
       function resize() {
+        // mobile browsers fire resize as the address bar slides; skip small height-only changes
+        if (innerWidth === lastW && Math.abs(innerHeight - lastH) < 160) return;
+        lastW = innerWidth; lastH = innerHeight;
         dpr = Math.min(window.devicePixelRatio || 1, 2);
         w = field.width = innerWidth * dpr;
         h = field.height = innerHeight * dpr;
@@ -299,7 +312,7 @@ export default function HomeClient() {
     // cmd+k shortcut
     const onCmdKey = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); setCmdkOpen((o) => !o); }
-      else if (e.key === "Escape") setCmdkOpen(false);
+      else if (e.key === "Escape") { setCmdkOpen(false); setSheetOpen(false); }
     };
     window.addEventListener("keydown", onCmdKey);
     cleanups.push(() => window.removeEventListener("keydown", onCmdKey));
@@ -307,6 +320,37 @@ export default function HomeClient() {
     return () => cleanups.forEach((fn) => fn());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // lock page scroll while the sheet is open
+  useEffect(() => {
+    if (!sheetOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, [sheetOpen]);
+
+  // swipe the sheet down to dismiss
+  const sheetRef = useRef(null);
+  const dragRef = useRef(null);
+  function onSheetTouchStart(e) {
+    if (sheetRef.current.scrollTop > 0) return;
+    dragRef.current = { y: e.touches[0].clientY, dy: 0 };
+  }
+  function onSheetTouchMove(e) {
+    const d = dragRef.current;
+    if (!d) return;
+    d.dy = Math.max(0, e.touches[0].clientY - d.y);
+    sheetRef.current.style.transition = "none";
+    sheetRef.current.style.transform = `translateY(${d.dy}px)`;
+  }
+  function onSheetTouchEnd() {
+    const d = dragRef.current;
+    dragRef.current = null;
+    if (!d) return;
+    sheetRef.current.style.transition = "";
+    sheetRef.current.style.transform = "";
+    if (d.dy > 90) setSheetOpen(false);
+  }
 
   function goTo(id) {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -342,6 +386,26 @@ export default function HomeClient() {
     { icon: "◑", title: "Toggle light / dark theme", sub: "", run: toggleTheme },
     { icon: "🔊", title: "Toggle sound effects", sub: "", run: toggleSound },
     { icon: "🎉", title: "Celebrate", sub: "Just because", run: () => { burst(180); sound.chord(); } },
+  ];
+
+  function pickAccent(i) {
+    setAccentIdx(i);
+    applyAccent(i);
+    sound.click();
+  }
+
+  function sheetGo(id) {
+    setSheetOpen(false);
+    // let the body scroll lock release before scrolling
+    setTimeout(() => goTo(id), 60);
+  }
+
+  const tabs = [
+    { id: "home", label: "Home", icon: "home", target: "top" },
+    { id: "labs", label: "Labs", icon: "flask", target: "simulations" },
+    { id: "platform", label: "Platform", icon: "grid", target: "features" },
+    { id: "demo", label: "Live", icon: "play", target: "showcase" },
+    { id: "more", label: "More", icon: "menu", onClick: () => setSheetOpen(true), pressed: sheetOpen },
   ];
 
   function handleSimCardClick(card) {
@@ -380,82 +444,42 @@ export default function HomeClient() {
           <span className="brand-text">Experi<b>verse</b></span>
         </a>
 
-        <nav className={"nav-links" + (mobileOpen ? " mobile-open" : "")} aria-label="Primary">
+        <nav className="nav-links" aria-label="Primary">
           <div className="nav-dropdown">
-            <a href="#simulations" onClick={() => setMobileOpen(false)}>
+            <a href="#simulations">
               Simulations <span className="nav-caret" aria-hidden="true">
                 <svg viewBox="0 0 24 24" width="12" height="12"><path d="M5 8l7 7 7-7" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </span>
             </a>
             <div className="nav-dropdown-bridge" aria-hidden="true"></div>
             <div className="nav-dropdown-panel" role="menu">
-              <a href="#simulations" className="nav-dropdown-item icon-physics" onClick={() => setMobileOpen(false)} role="menuitem">
-                <span className="nav-dropdown-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="20" height="20"><g fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" /><ellipse cx="12" cy="12" rx="9.5" ry="4" /><ellipse cx="12" cy="12" rx="9.5" ry="4" transform="rotate(60 12 12)" /><ellipse cx="12" cy="12" rx="9.5" ry="4" transform="rotate(120 12 12)" /></g></svg>
-                </span>
-                <span className="nav-dropdown-text">
-                  <span className="nav-dropdown-title">Physics</span>
-                  <span className="nav-dropdown-sub">Motion, forces &amp; energy</span>
-                </span>
-              </a>
-              <a href="#simulations" className="nav-dropdown-item icon-chemistry" onClick={() => setMobileOpen(false)} role="menuitem">
-                <span className="nav-dropdown-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="20" height="20"><g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 2.5h6" /><path d="M10 2.5v6.2L4.8 18a2 2 0 0 0 1.8 2.9h10.8a2 2 0 0 0 1.8-2.9L14 8.7V2.5" /><path d="M7.5 15h9" /></g></svg>
-                </span>
-                <span className="nav-dropdown-text">
-                  <span className="nav-dropdown-title">Chemistry</span>
-                  <span className="nav-dropdown-sub">Reactions &amp; molecules</span>
-                </span>
-              </a>
-              <a href="#simulations" className="nav-dropdown-item icon-biology" onClick={() => setMobileOpen(false)} role="menuitem">
-                <span className="nav-dropdown-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="20" height="20"><g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M7 3c0 7 10 11 10 18" /><path d="M17 3c0 7-10 11-10 18" /><path d="M8 7h8M7.3 12h9.4M8 17h8" /></g></svg>
-                </span>
-                <span className="nav-dropdown-text">
-                  <span className="nav-dropdown-title">Biology</span>
-                  <span className="nav-dropdown-sub">Cells, genes &amp; growth</span>
-                </span>
-              </a>
-              <a href="#simulations" className="nav-dropdown-item icon-geographic" onClick={() => setMobileOpen(false)} role="menuitem">
-                <span className="nav-dropdown-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="20" height="20"><g fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="9.5" /><ellipse cx="12" cy="12" rx="4.2" ry="9.5" /><path d="M2.5 12h19M3.8 7.5h16.4M3.8 16.5h16.4" strokeLinecap="round" /></g></svg>
-                </span>
-                <span className="nav-dropdown-text">
-                  <span className="nav-dropdown-title">Geographic</span>
-                  <span className="nav-dropdown-sub">Earth &amp; climate systems</span>
-                </span>
-              </a>
-              <a href="#simulations" className="nav-dropdown-item icon-history" onClick={() => setMobileOpen(false)} role="menuitem">
-                <span className="nav-dropdown-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="20" height="20"><g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8.5L12 4l9 4.5" /><path d="M4.5 8.5v10M9.5 8.5v10M14.5 8.5v10M19.5 8.5v10" /><path d="M3 20h18" /></g></svg>
-                </span>
-                <span className="nav-dropdown-text">
-                  <span className="nav-dropdown-title">History</span>
-                  <span className="nav-dropdown-sub">Timelines &amp; civilizations</span>
-                </span>
-              </a>
-              <a href="#simulations" className="nav-dropdown-item icon-philosophy" onClick={() => setMobileOpen(false)} role="menuitem">
-                <span className="nav-dropdown-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="20" height="20"><g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v4" /><path d="M7 7h10l1.5 7a5.5 5.5 0 0 1-11 0L9 7" /><path d="M9.5 20.5h5" /></g></svg>
-                </span>
-                <span className="nav-dropdown-text">
-                  <span className="nav-dropdown-title">Philosophy</span>
-                  <span className="nav-dropdown-sub">Logic &amp; thought experiments</span>
-                </span>
-              </a>
+              {DISCIPLINES.map((d) => (
+                <a key={d.key} href="#simulations" className={"nav-dropdown-item icon-" + d.key} role="menuitem">
+                  <span className="nav-dropdown-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="20" height="20">{d.icon}</svg>
+                  </span>
+                  <span className="nav-dropdown-text">
+                    <span className="nav-dropdown-title">{d.title}</span>
+                    <span className="nav-dropdown-sub">{d.sub}</span>
+                  </span>
+                </a>
+              ))}
             </div>
           </div>
-          <a href="#features" onClick={() => setMobileOpen(false)}>Platform</a>
-          <a href="#showcase" onClick={() => setMobileOpen(false)}>Live Demo</a>
-          <a href="#stats" onClick={() => setMobileOpen(false)}>Impact</a>
+          <a href="#features">Platform</a>
+          <a href="#showcase">Live Demo</a>
+          <a href="#stats">Impact</a>
         </nav>
 
         <div className="nav-actions">
-          <button className="btn btn-ghost icon-btn" aria-label="Open command palette" title="Command palette — Ctrl/⌘ K" onClick={() => setCmdkOpen(true)}>⌘K</button>
-          <button className="btn btn-ghost icon-btn" aria-label="Change accent color" title="Change accent color" onClick={cycleAccent}>
+          <button className="btn btn-ghost icon-btn search-btn" aria-label="Search" title="Command palette — Ctrl/⌘ K" onClick={() => setCmdkOpen(true)}>
+            <span className="kbd-label">⌘K</span>
+            <svg className="search-ico" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><g fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></g></svg>
+          </button>
+          <button className="btn btn-ghost icon-btn accent-btn" aria-label="Change accent color" title="Change accent color" onClick={cycleAccent}>
             <span className="accent-dot" aria-hidden="true"></span>
           </button>
-          <button className="btn btn-ghost icon-btn" aria-label="Toggle sound" title="Toggle sound" aria-pressed={sound.enabled} onClick={toggleSound}>
+          <button className="btn btn-ghost icon-btn sound-btn" aria-label="Toggle sound" title="Toggle sound" aria-pressed={sound.enabled} onClick={toggleSound}>
             <span className="sound-icon">{sound.enabled ? "🔊" : "🔇"}</span>
           </button>
           <button className="btn btn-ghost icon-btn" aria-label="Toggle theme" onClick={toggleTheme}>
@@ -464,7 +488,7 @@ export default function HomeClient() {
           <a href="#simulations" className="btn btn-primary magnetic">Launch Lab <span aria-hidden="true">→</span></a>
         </div>
 
-        <button className={"nav-burger" + (mobileOpen ? " open" : "")} aria-label="Open menu" aria-expanded={mobileOpen} onClick={() => setMobileOpen((o) => !o)}>
+        <button className={"nav-burger" + (sheetOpen ? " open" : "")} aria-label="Open menu" aria-expanded={sheetOpen} onClick={() => setSheetOpen((o) => !o)}>
           <span></span><span></span><span></span>
         </button>
       </header>
@@ -556,16 +580,17 @@ export default function HomeClient() {
               const inner = (
                 <>
                   <div className="sim-icon">{card.icon}</div>
-                  <h3>{card.title}</h3>
+                  <h3>{card.title}{card.href && <span className="sim-live">Live</span>}</h3>
                   <p>{card.desc}</p>
                   <div className="sim-meta"><span>{card.tags[0]}</span><span>{card.tags[1]}</span></div>
                   <span className="sim-go">Open sandbox →</span>
                 </>
               );
               return card.href ? (
-                <Link key={card.cat} href={card.href} className="sim-card tilt" data-cat={card.cat} style={{ "--accent": card.accent }}>
+                // plain <a>: each lab ships its own theme CSS, and a full load keeps themes from stacking
+                <a key={card.cat} href={card.href} className="sim-card tilt" data-cat={card.cat} style={{ "--accent": card.accent }}>
                   {inner}
-                </Link>
+                </a>
               ) : (
                 <article key={card.cat} className="sim-card tilt" data-cat={card.cat} style={{ "--accent": card.accent }} onClick={() => handleSimCardClick(card)}>
                   {inner}
@@ -705,6 +730,96 @@ export default function HomeClient() {
           <span className="footer-badge">◈ Rendered in real time</span>
         </div>
       </footer>
+
+      <div className={"sheet-root" + (sheetOpen ? " open" : "")} inert={!sheetOpen}>
+        <div className="sheet-backdrop" onClick={() => setSheetOpen(false)} aria-hidden="true"></div>
+        <div
+          className="sheet"
+          ref={sheetRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu"
+          onTouchStart={onSheetTouchStart}
+          onTouchMove={onSheetTouchMove}
+          onTouchEnd={onSheetTouchEnd}
+        >
+          <div className="sheet-grabber" aria-hidden="true"></div>
+          <div className="sheet-head">
+            <span className="brand-text">Experi<b>verse</b></span>
+            <button className="sheet-close" aria-label="Close menu" onClick={() => setSheetOpen(false)}>
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" /></svg>
+            </button>
+          </div>
+
+          <p className="sheet-label">Disciplines</p>
+          <div className="sheet-grid">
+            {DISCIPLINES.map((d) => (
+              <button key={d.key} className={"sheet-tile icon-" + d.key} onClick={() => sheetGo("simulations")}>
+                <span className="nav-dropdown-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="22" height="22">{d.icon}</svg>
+                </span>
+                <span>{d.title}</span>
+              </button>
+            ))}
+          </div>
+
+          <p className="sheet-label">Jump to</p>
+          <div className="sheet-group">
+            {[
+              ["simulations", "🧪", "Simulations"],
+              ["features", "⚙️", "Platform"],
+              ["showcase", "🎮", "Live demo"],
+              ["stats", "📈", "Impact"],
+            ].map(([id, ico, label]) => (
+              <button key={id} className="sheet-row" onClick={() => sheetGo(id)}>
+                <span className="sheet-row-ico" aria-hidden="true">{ico}</span>
+                <span className="sheet-row-text">{label}</span>
+                <span className="sheet-chev" aria-hidden="true">›</span>
+              </button>
+            ))}
+          </div>
+
+          <p className="sheet-label">Preferences</p>
+          <div className="sheet-group">
+            <button className="sheet-row" role="switch" aria-checked={theme === "light"} onClick={toggleTheme}>
+              <span className="sheet-row-ico" aria-hidden="true">◑</span>
+              <span className="sheet-row-text">Light mode</span>
+              <span className={"switch" + (theme === "light" ? " on" : "")} aria-hidden="true"></span>
+            </button>
+            <button className="sheet-row" role="switch" aria-checked={sound.enabled} onClick={toggleSound}>
+              <span className="sheet-row-ico" aria-hidden="true">{sound.enabled ? "🔊" : "🔇"}</span>
+              <span className="sheet-row-text">Sound effects</span>
+              <span className={"switch" + (sound.enabled ? " on" : "")} aria-hidden="true"></span>
+            </button>
+            <div className="sheet-row">
+              <span className="sheet-row-ico" aria-hidden="true">🎨</span>
+              <span className="sheet-row-text">Accent</span>
+              <span className="swatches" role="radiogroup" aria-label="Accent color">
+                {PALETTES.map((p, i) => (
+                  <button
+                    key={p.name}
+                    role="radio"
+                    aria-checked={accentIdx === i}
+                    aria-label={p.name}
+                    className={"swatch" + (accentIdx === i ? " on" : "")}
+                    style={{ background: `linear-gradient(135deg, ${p.a}, ${p.b})` }}
+                    onClick={() => pickAccent(i)}
+                  ></button>
+                ))}
+              </span>
+            </div>
+            <button className="sheet-row" onClick={() => { setSheetOpen(false); setCmdkOpen(true); }}>
+              <span className="sheet-row-ico" aria-hidden="true">⌕</span>
+              <span className="sheet-row-text">Search actions</span>
+              <span className="sheet-chev" aria-hidden="true">›</span>
+            </button>
+          </div>
+
+          <a href="/simulations/bio" className="btn btn-primary btn-lg sheet-cta">Open a live lab <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+
+      <MobileTabBar items={tabs} label="Experiverse sections" />
 
       <CommandPalette open={cmdkOpen} onClose={() => setCmdkOpen(false)} commands={commands} />
       <Toast ref={toastRef} />

@@ -7,6 +7,8 @@ export const metadata = {
     "Vivarium — a living systems lab. Culture microorganisms, evolve cellular life, and watch DNA and emergence unfold in your browser.",
 };
 
+export const viewport = { themeColor: "#04140f" };
+
 export default function BioPage() {
   return <BioClient />;
 }

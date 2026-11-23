@@ -5,6 +5,15 @@ import AuroraBackground from "./AuroraBackground";
 import GooCursor from "./GooCursor";
 import GooBlob from "./GooBlob";
 import useConfetti from "../../Confetti";
+import MobileTabBar from "../../MobileTabBar";
+
+const TABS = [
+  { id: "home", label: "Home", icon: "sparkle", target: "top" },
+  { id: "experiments", label: "Labs", icon: "flask", target: "experiments" },
+  { id: "gallery", label: "Gallery", icon: "gallery", target: "gallery" },
+  { id: "join", label: "Join", icon: "mail", target: "join" },
+  { id: "hub", label: "Hub", icon: "home", href: "/" },
+];
 
 const WORDS = ["touch", "break", "bend", "feel"];
 const TILES = [
@@ -323,6 +332,8 @@ export default function AuroraClient() {
           <span>Rendered live ◈</span>
         </div>
       </footer>
+
+      <MobileTabBar items={TABS} label="Aurora Lab sections" />
     </div>
   );
 }

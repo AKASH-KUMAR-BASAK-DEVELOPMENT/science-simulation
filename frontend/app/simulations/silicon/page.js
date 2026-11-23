@@ -7,6 +7,8 @@ export const metadata = {
     "Silicon Lab — a live supercomputer simulator. Watch data flow through circuits, pipeline instructions, and branch through a decision engine in real time.",
 };
 
+export const viewport = { themeColor: "#04070e" };
+
 export default function SiliconPage() {
   return <SiliconClient />;
 }

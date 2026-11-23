@@ -6,6 +6,13 @@ export const metadata = {
     "Experiverse — an interactive playground for physics, chemistry, biology and astronomy simulations. Explore science in your browser.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#05060f",
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">

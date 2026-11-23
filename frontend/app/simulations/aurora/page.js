@@ -7,6 +7,8 @@ export const metadata = {
     "Aurora Lab — touchable science. Simulate physics, chemistry, biology and the cosmos in a browser that feels alive.",
 };
 
+export const viewport = { themeColor: "#f3efe6" };
+
 export default function AuroraPage() {
   return <AuroraClient />;
 }

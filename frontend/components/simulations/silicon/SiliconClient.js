@@ -5,6 +5,15 @@ import CircuitBackground from "./CircuitBackground";
 import CpuDie from "./CpuDie";
 import InstructionPipeline from "./InstructionPipeline";
 import DecisionEngine from "./DecisionEngine";
+import MobileTabBar from "../../MobileTabBar";
+
+const TABS = [
+  { id: "core", label: "Core", icon: "chip", target: "top" },
+  { id: "pipeline", label: "Pipeline", icon: "flow", target: "pipeline" },
+  { id: "decision", label: "Decide", icon: "branch", target: "decision" },
+  { id: "access", label: "Access", icon: "terminal", target: "access" },
+  { id: "hub", label: "Hub", icon: "home", href: "/" },
+];
 
 const TYPE_LINES = [
   "booting 128 cores............ OK",
@@ -239,6 +248,8 @@ export default function SiliconClient() {
           <span className="f-live"><i className="dot"></i> live</span>
         </div>
       </footer>
+
+      <MobileTabBar items={TABS} label="Silicon sections" />
     </div>
   );
 }

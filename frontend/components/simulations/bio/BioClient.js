@@ -4,6 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import PetriDish from "./PetriDish";
 import GameOfLife from "./GameOfLife";
 import DnaHelix from "./DnaHelix";
+import MobileTabBar from "../../MobileTabBar";
+
+const TABS = [
+  { id: "dish", label: "Dish", icon: "cell", target: "top" },
+  { id: "organisms", label: "Specimens", icon: "flask", target: "organisms" },
+  { id: "life", label: "Life", icon: "life", target: "emergence" },
+  { id: "dna", label: "DNA", icon: "dna", target: "dna" },
+  { id: "hub", label: "Hub", icon: "home", href: "/" },
+];
 
 const SPECIMENS = [
   { cls: "s-a", emoji: "🦠", title: "Microbial Swarm", desc: "Boids that flock, flee and feed as a colony." },
@@ -226,6 +235,8 @@ export default function BioClient() {
           <span className="f-live"><i className="live"></i> specimen alive</span>
         </div>
       </footer>
+
+      <MobileTabBar items={TABS} label="Vivarium sections" />
     </div>
   );
 }
