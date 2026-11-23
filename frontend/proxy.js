@@ -1,3 +1,4 @@
+// Tracks every page visit before passing the request through.
 import { NextResponse } from "next/server";
 import { recordVisit } from "./lib/visits";
 
