@@ -7,6 +7,7 @@ import CommandPalette from "./CommandPalette";
 import Toast from "./Toast";
 import useSound from "./useSound";
 import useConfetti from "./Confetti";
+import VisitorCounter from "./VisitorCounter";
 
 const PALETTES = [
   { name: "Nebula", a: "#5b8cff", b: "#a06bff", c: "#2ad4d4" },
@@ -381,7 +382,70 @@ export default function HomeClient() {
         </a>
 
         <nav className={"nav-links" + (mobileOpen ? " mobile-open" : "")} aria-label="Primary">
-          <a href="#simulations" onClick={() => setMobileOpen(false)}>Simulations</a>
+          <div className="nav-dropdown">
+            <a href="#simulations" onClick={() => setMobileOpen(false)}>
+              Simulations <span className="nav-caret" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="12" height="12"><path d="M5 8l7 7 7-7" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </span>
+            </a>
+            <div className="nav-dropdown-bridge" aria-hidden="true"></div>
+            <div className="nav-dropdown-panel" role="menu">
+              <a href="#simulations" className="nav-dropdown-item icon-physics" onClick={() => setMobileOpen(false)} role="menuitem">
+                <span className="nav-dropdown-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="20" height="20"><g fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" /><ellipse cx="12" cy="12" rx="9.5" ry="4" /><ellipse cx="12" cy="12" rx="9.5" ry="4" transform="rotate(60 12 12)" /><ellipse cx="12" cy="12" rx="9.5" ry="4" transform="rotate(120 12 12)" /></g></svg>
+                </span>
+                <span className="nav-dropdown-text">
+                  <span className="nav-dropdown-title">Physics</span>
+                  <span className="nav-dropdown-sub">Motion, forces &amp; energy</span>
+                </span>
+              </a>
+              <a href="#simulations" className="nav-dropdown-item icon-chemistry" onClick={() => setMobileOpen(false)} role="menuitem">
+                <span className="nav-dropdown-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="20" height="20"><g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 2.5h6" /><path d="M10 2.5v6.2L4.8 18a2 2 0 0 0 1.8 2.9h10.8a2 2 0 0 0 1.8-2.9L14 8.7V2.5" /><path d="M7.5 15h9" /></g></svg>
+                </span>
+                <span className="nav-dropdown-text">
+                  <span className="nav-dropdown-title">Chemistry</span>
+                  <span className="nav-dropdown-sub">Reactions &amp; molecules</span>
+                </span>
+              </a>
+              <a href="#simulations" className="nav-dropdown-item icon-biology" onClick={() => setMobileOpen(false)} role="menuitem">
+                <span className="nav-dropdown-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="20" height="20"><g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M7 3c0 7 10 11 10 18" /><path d="M17 3c0 7-10 11-10 18" /><path d="M8 7h8M7.3 12h9.4M8 17h8" /></g></svg>
+                </span>
+                <span className="nav-dropdown-text">
+                  <span className="nav-dropdown-title">Biology</span>
+                  <span className="nav-dropdown-sub">Cells, genes &amp; growth</span>
+                </span>
+              </a>
+              <a href="#simulations" className="nav-dropdown-item icon-geographic" onClick={() => setMobileOpen(false)} role="menuitem">
+                <span className="nav-dropdown-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="20" height="20"><g fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="9.5" /><ellipse cx="12" cy="12" rx="4.2" ry="9.5" /><path d="M2.5 12h19M3.8 7.5h16.4M3.8 16.5h16.4" strokeLinecap="round" /></g></svg>
+                </span>
+                <span className="nav-dropdown-text">
+                  <span className="nav-dropdown-title">Geographic</span>
+                  <span className="nav-dropdown-sub">Earth &amp; climate systems</span>
+                </span>
+              </a>
+              <a href="#simulations" className="nav-dropdown-item icon-history" onClick={() => setMobileOpen(false)} role="menuitem">
+                <span className="nav-dropdown-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="20" height="20"><g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8.5L12 4l9 4.5" /><path d="M4.5 8.5v10M9.5 8.5v10M14.5 8.5v10M19.5 8.5v10" /><path d="M3 20h18" /></g></svg>
+                </span>
+                <span className="nav-dropdown-text">
+                  <span className="nav-dropdown-title">History</span>
+                  <span className="nav-dropdown-sub">Timelines &amp; civilizations</span>
+                </span>
+              </a>
+              <a href="#simulations" className="nav-dropdown-item icon-philosophy" onClick={() => setMobileOpen(false)} role="menuitem">
+                <span className="nav-dropdown-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="20" height="20"><g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v4" /><path d="M7 7h10l1.5 7a5.5 5.5 0 0 1-11 0L9 7" /><path d="M9.5 20.5h5" /></g></svg>
+                </span>
+                <span className="nav-dropdown-text">
+                  <span className="nav-dropdown-title">Philosophy</span>
+                  <span className="nav-dropdown-sub">Logic &amp; thought experiments</span>
+                </span>
+              </a>
+            </div>
+          </div>
           <a href="#features" onClick={() => setMobileOpen(false)}>Platform</a>
           <a href="#showcase" onClick={() => setMobileOpen(false)}>Live Demo</a>
           <a href="#stats" onClick={() => setMobileOpen(false)}>Impact</a>
@@ -639,6 +703,7 @@ export default function HomeClient() {
         </div>
         <div className="footer-bottom">
           <span>© 2026 Experiverse. Made with curiosity.</span>
+          <VisitorCounter />
           <span className="footer-badge">◈ Rendered in real time</span>
         </div>
       </footer>
