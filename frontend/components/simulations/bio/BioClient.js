@@ -96,7 +96,7 @@ export default function BioClient() {
   }
 
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} className="theme-bio">
       <div className="culture" aria-hidden="true">
         <span className="cbl c1"></span><span className="cbl c2"></span><span className="cbl c3"></span><span className="cbl c4"></span>
       </div>

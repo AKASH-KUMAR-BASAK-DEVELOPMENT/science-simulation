@@ -2,39 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import Playground from "./simulations/Playground";
-import CommandPalette from "./CommandPalette";
-import Toast from "./Toast";
 import useSound from "./useSound";
 import useConfetti from "./Confetti";
-import MobileTabBar from "./MobileTabBar";
-
-const PALETTES = [
-  { name: "Nebula", a: "#5b8cff", b: "#a06bff", c: "#2ad4d4" },
-  { name: "Plasma", a: "#ff6bb5", b: "#a06bff", c: "#ffb454" },
-  { name: "Aurora", a: "#3ddc97", b: "#2ad4d4", c: "#5b8cff" },
-  { name: "Solar", a: "#ffb454", b: "#ff6b3d", c: "#ff6bb5" },
-];
-
-// shared by the desktop dropdown and the mobile sheet
-const DISCIPLINES = [
-  { key: "physics", title: "Physics", sub: "Motion, forces & energy", icon: <g fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" /><ellipse cx="12" cy="12" rx="9.5" ry="4" /><ellipse cx="12" cy="12" rx="9.5" ry="4" transform="rotate(60 12 12)" /><ellipse cx="12" cy="12" rx="9.5" ry="4" transform="rotate(120 12 12)" /></g> },
-  { key: "chemistry", title: "Chemistry", sub: "Reactions & molecules", icon: <g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 2.5h6" /><path d="M10 2.5v6.2L4.8 18a2 2 0 0 0 1.8 2.9h10.8a2 2 0 0 0 1.8-2.9L14 8.7V2.5" /><path d="M7.5 15h9" /></g> },
-  { key: "biology", title: "Biology", sub: "Cells, genes & growth", icon: <g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M7 3c0 7 10 11 10 18" /><path d="M17 3c0 7-10 11-10 18" /><path d="M8 7h8M7.3 12h9.4M8 17h8" /></g> },
-  { key: "geographic", title: "Geographic", sub: "Earth & climate systems", icon: <g fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="9.5" /><ellipse cx="12" cy="12" rx="4.2" ry="9.5" /><path d="M2.5 12h19M3.8 7.5h16.4M3.8 16.5h16.4" strokeLinecap="round" /></g> },
-  { key: "history", title: "History", sub: "Timelines & civilizations", icon: <g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8.5L12 4l9 4.5" /><path d="M4.5 8.5v10M9.5 8.5v10M14.5 8.5v10M19.5 8.5v10" /><path d="M3 20h18" /></g> },
-  { key: "philosophy", title: "Philosophy", sub: "Logic & thought experiments", icon: <g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v4" /><path d="M7 7h10l1.5 7a5.5 5.5 0 0 1-11 0L9 7" /><path d="M9.5 20.5h5" /></g> },
-];
+import SiteChrome from "./site/SiteChrome";
+import SiteFooter from "./site/SiteFooter";
+import { LABS, labHref } from "./simulations/catalog";
+import Link from "next/link";
 
 const GLYPHS ="!<>-_\\/[]{}—=+*^?#01";
-
-const SIM_CARDS = [
-  { cat: "physics", accent: "#5b8cff", icon: "⚛️", title: "Particle Physics", desc: "Collide, bond and scatter thousands of particles under real force fields and gravity.", tags: ["Newtonian", "N-body"], href: null },
-  { cat: "astro", accent: "#a06bff", icon: "🪐", title: "Orbital Mechanics", desc: "Build solar systems, sling probes with gravity assists, and watch Kepler's laws unfold.", tags: ["Kepler", "Gravity"], href: null },
-  { cat: "chem", accent: "#ff6bb5", icon: "🧪", title: "Chemical Reactions", desc: "Mix molecules, tune temperature and pressure, and visualize reaction kinetics live.", tags: ["Kinetics", "Bonds"], href: null },
-  { cat: "bio", accent: "#3ddc97", icon: "🧬", title: "Cellular Life", desc: "Evolve organisms, simulate neural growth and watch emergent ecosystems self-organize.", tags: ["Emergence", "Genetics"], href: "/simulations/bio" },
-  { cat: "wave", accent: "#ffb454", icon: "🌊", title: "Waves & Optics", desc: "Interfere, diffract and refract light and sound with adjustable wavelengths and media.", tags: ["Interference", "Optics"], href: null },
-  { cat: "quantum", accent: "#2ad4d4", icon: "🔮", title: "Quantum Fields", desc: "Explore wave functions, tunneling and superposition through intuitive visualizations.", tags: ["Wavefn", "Tunneling"], href: null },
-];
 
 export default function HomeClient() {
   const containerRef = useRef(null);
@@ -43,37 +18,16 @@ export default function HomeClient() {
   const sound = useSound();
   const burst = useConfetti();
 
-  const [theme, setTheme] = useState(null);
-  const [accentIdx, setAccentIdx] = useState(0);
-  const [navScrolled, setNavScrolled] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [cmdkOpen, setCmdkOpen] = useState(false);
   const [ctaNote, setCtaNote] = useState("Free forever for students. No credit card.");
   const prefersReducedRef = useRef(false);
 
   function toast(msg, ms) { toastRef.current?.show(msg, ms); }
 
-  function applyAccent(i) {
-    const p = PALETTES[i % PALETTES.length];
-    const r = document.documentElement.style;
-    r.setProperty("--accent", p.a);
-    r.setProperty("--accent-2", p.b);
-    r.setProperty("--accent-3", p.c);
-    localStorage.setItem("ql-accent", String(i % PALETTES.length));
-  }
-
   useEffect(() => {
     prefersReducedRef.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const savedTheme = localStorage.getItem("ql-theme");
-    if (savedTheme === "light") document.documentElement.setAttribute("data-theme", "light");
-    setTheme(savedTheme === "light" ? "light" : "dark");
-    const savedAccent = parseInt(localStorage.getItem("ql-accent") || "0", 10) || 0;
-    setAccentIdx(savedAccent);
-    applyAccent(savedAccent);
   }, []);
 
-  // ambient particle field + cursor glow + scroll progress + nav + Konami
+  // ambient particle field + cursor glow + reveals + counters + Konami
   useEffect(() => {
     const prefersReduced = prefersReducedRef.current;
     const finePointer = window.matchMedia("(pointer:fine)").matches;
@@ -169,17 +123,6 @@ export default function HomeClient() {
       follow();
       cleanups.push(() => { window.removeEventListener("mousemove", onMove); cancelAnimationFrame(raf); });
     } else if (glow) glow.style.display = "none";
-
-    // scroll: nav + progress
-    function onScroll() {
-      const y = window.scrollY;
-      setNavScrolled(y > 20);
-      const max = document.documentElement.scrollHeight - innerHeight;
-      setProgress(max > 0 ? (y / max) * 100 : 0);
-    }
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    cleanups.push(() => window.removeEventListener("scroll", onScroll));
 
     // reveal
     const revealEls = [...containerRef.current.querySelectorAll("[data-reveal]")];
@@ -285,13 +228,6 @@ export default function HomeClient() {
       });
     }
 
-    // global sound hooks
-    const onOver = (e) => { if (e.target.closest(".btn, .pg-tab, .sim-card, .nav-links a, .cmdk-item, .chip")) sound.hover(); };
-    const onClick = (e) => { if (e.target.closest(".btn, .nav-links a, .sim-card")) sound.click(); };
-    document.addEventListener("mouseover", onOver);
-    document.addEventListener("click", onClick);
-    cleanups.push(() => { document.removeEventListener("mouseover", onOver); document.removeEventListener("click", onClick); });
-
     // Konami code
     const seq = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"];
     let ki = 0;
@@ -309,109 +245,13 @@ export default function HomeClient() {
     window.addEventListener("keydown", onKey);
     cleanups.push(() => window.removeEventListener("keydown", onKey));
 
-    // cmd+k shortcut
-    const onCmdKey = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); setCmdkOpen((o) => !o); }
-      else if (e.key === "Escape") { setCmdkOpen(false); setSheetOpen(false); }
-    };
-    window.addEventListener("keydown", onCmdKey);
-    cleanups.push(() => window.removeEventListener("keydown", onCmdKey));
-
     return () => cleanups.forEach((fn) => fn());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // lock page scroll while the sheet is open
-  useEffect(() => {
-    if (!sheetOpen) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
-  }, [sheetOpen]);
-
-  // swipe the sheet down to dismiss
-  const sheetRef = useRef(null);
-  const dragRef = useRef(null);
-  function onSheetTouchStart(e) {
-    if (sheetRef.current.scrollTop > 0) return;
-    dragRef.current = { y: e.touches[0].clientY, dy: 0 };
-  }
-  function onSheetTouchMove(e) {
-    const d = dragRef.current;
-    if (!d) return;
-    d.dy = Math.max(0, e.touches[0].clientY - d.y);
-    sheetRef.current.style.transition = "none";
-    sheetRef.current.style.transform = `translateY(${d.dy}px)`;
-  }
-  function onSheetTouchEnd() {
-    const d = dragRef.current;
-    dragRef.current = null;
-    if (!d) return;
-    sheetRef.current.style.transition = "";
-    sheetRef.current.style.transform = "";
-    if (d.dy > 90) setSheetOpen(false);
-  }
-
-  function goTo(id) {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-  }
-
-  function toggleTheme() {
-    const isLight = document.documentElement.getAttribute("data-theme") === "light";
-    if (isLight) { document.documentElement.removeAttribute("data-theme"); localStorage.setItem("ql-theme", "dark"); setTheme("dark"); }
-    else { document.documentElement.setAttribute("data-theme", "light"); localStorage.setItem("ql-theme", "light"); setTheme("light"); }
-  }
-
-  function toggleSound() {
-    const next = !sound.enabled;
-    sound.set(next);
-    if (next) { sound.tab(); toast("🔊 Sound on"); } else toast("🔇 Sound off");
-  }
-
-  function cycleAccent() {
-    const next = (accentIdx + 1) % PALETTES.length;
-    setAccentIdx(next);
-    applyAccent(next);
-    toast(`🎨 Accent: ${PALETTES[next].name}`);
-  }
-
-  const playgroundApi = useRef(null);
-
-  const commands = [
-    { icon: "🧪", title: "Go to Simulations", sub: "Browse the six lab disciplines", run: () => goTo("simulations") },
-    { icon: "⚙️", title: "Go to Platform", sub: "Engine & feature overview", run: () => goTo("features") },
-    { icon: "🎮", title: "Go to Live Demo", sub: "The interactive playground", run: () => goTo("showcase") },
-    { icon: "📈", title: "Go to Impact", sub: "Usage stats", run: () => goTo("stats") },
-    { icon: "🎨", title: "Cycle accent color", sub: "Change the theme palette", run: cycleAccent },
-    { icon: "◑", title: "Toggle light / dark theme", sub: "", run: toggleTheme },
-    { icon: "🔊", title: "Toggle sound effects", sub: "", run: toggleSound },
+  const extraCommands = [
     { icon: "🎉", title: "Celebrate", sub: "Just because", run: () => { burst(180); sound.chord(); } },
   ];
-
-  function pickAccent(i) {
-    setAccentIdx(i);
-    applyAccent(i);
-    sound.click();
-  }
-
-  function sheetGo(id) {
-    setSheetOpen(false);
-    // let the body scroll lock release before scrolling
-    setTimeout(() => goTo(id), 60);
-  }
-
-  const tabs = [
-    { id: "home", label: "Home", icon: "home", target: "top" },
-    { id: "labs", label: "Labs", icon: "flask", target: "simulations" },
-    { id: "platform", label: "Platform", icon: "grid", target: "features" },
-    { id: "demo", label: "Live", icon: "play", target: "showcase" },
-    { id: "more", label: "More", icon: "menu", onClick: () => setSheetOpen(true), pressed: sheetOpen },
-  ];
-
-  function handleSimCardClick(card) {
-    if (card.href) return;
-    toast(`Opening ${card.title} sandbox…`);
-  }
 
   function handleCtaSubmit(e) {
     e.preventDefault();
@@ -424,74 +264,10 @@ export default function HomeClient() {
   }
 
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} className="theme-home">
       <canvas id="field" aria-hidden="true"></canvas>
       <div className="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
-      <div className="scroll-progress" style={{ width: progress + "%" }} aria-hidden="true"></div>
-
-      <header className={"nav" + (navScrolled ? " scrolled" : "")}>
-        <a className="brand" href="#top" aria-label="Experiverse home">
-          <span className="brand-mark" aria-hidden="true">
-            <svg viewBox="0 0 48 48" width="30" height="30">
-              <g fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                <circle cx="24" cy="24" r="4.5" fill="currentColor" stroke="none" />
-                <ellipse cx="24" cy="24" rx="19" ry="8" />
-                <ellipse cx="24" cy="24" rx="19" ry="8" transform="rotate(60 24 24)" />
-                <ellipse cx="24" cy="24" rx="19" ry="8" transform="rotate(120 24 24)" />
-              </g>
-            </svg>
-          </span>
-          <span className="brand-text">Experi<b>verse</b></span>
-        </a>
-
-        <nav className="nav-links" aria-label="Primary">
-          <div className="nav-dropdown">
-            <a href="#simulations">
-              Simulations <span className="nav-caret" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="12" height="12"><path d="M5 8l7 7 7-7" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              </span>
-            </a>
-            <div className="nav-dropdown-bridge" aria-hidden="true"></div>
-            <div className="nav-dropdown-panel" role="menu">
-              {DISCIPLINES.map((d) => (
-                <a key={d.key} href="#simulations" className={"nav-dropdown-item icon-" + d.key} role="menuitem">
-                  <span className="nav-dropdown-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" width="20" height="20">{d.icon}</svg>
-                  </span>
-                  <span className="nav-dropdown-text">
-                    <span className="nav-dropdown-title">{d.title}</span>
-                    <span className="nav-dropdown-sub">{d.sub}</span>
-                  </span>
-                </a>
-              ))}
-            </div>
-          </div>
-          <a href="#features">Platform</a>
-          <a href="#showcase">Live Demo</a>
-          <a href="#stats">Impact</a>
-        </nav>
-
-        <div className="nav-actions">
-          <button className="btn btn-ghost icon-btn search-btn" aria-label="Search" title="Command palette — Ctrl/⌘ K" onClick={() => setCmdkOpen(true)}>
-            <span className="kbd-label">⌘K</span>
-            <svg className="search-ico" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><g fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></g></svg>
-          </button>
-          <button className="btn btn-ghost icon-btn accent-btn" aria-label="Change accent color" title="Change accent color" onClick={cycleAccent}>
-            <span className="accent-dot" aria-hidden="true"></span>
-          </button>
-          <button className="btn btn-ghost icon-btn sound-btn" aria-label="Toggle sound" title="Toggle sound" aria-pressed={sound.enabled} onClick={toggleSound}>
-            <span className="sound-icon">{sound.enabled ? "🔊" : "🔇"}</span>
-          </button>
-          <button className="btn btn-ghost icon-btn" aria-label="Toggle theme" onClick={toggleTheme}>
-            <span className="theme-icon">◑</span>
-          </button>
-          <a href="#simulations" className="btn btn-primary magnetic">Launch Lab <span aria-hidden="true">→</span></a>
-        </div>
-
-        <button className={"nav-burger" + (sheetOpen ? " open" : "")} aria-label="Open menu" aria-expanded={sheetOpen} onClick={() => setSheetOpen((o) => !o)}>
-          <span></span><span></span><span></span>
-        </button>
-      </header>
+      <SiteChrome home sound={sound} toastRef={toastRef} extraCommands={extraCommands} />
 
       <main id="top">
         <section className="hero">
@@ -576,27 +352,15 @@ export default function HomeClient() {
           </div>
 
           <div className="sim-grid">
-            {SIM_CARDS.map((card) => {
-              const inner = (
-                <>
-                  <div className="sim-icon">{card.icon}</div>
-                  <h3>{card.title}{card.href && <span className="sim-live">Live</span>}</h3>
-                  <p>{card.desc}</p>
-                  <div className="sim-meta"><span>{card.tags[0]}</span><span>{card.tags[1]}</span></div>
-                  <span className="sim-go">Open sandbox →</span>
-                </>
-              );
-              return card.href ? (
-                // plain <a>: each lab ships its own theme CSS, and a full load keeps themes from stacking
-                <a key={card.cat} href={card.href} className="sim-card tilt" data-cat={card.cat} style={{ "--accent": card.accent }}>
-                  {inner}
-                </a>
-              ) : (
-                <article key={card.cat} className="sim-card tilt" data-cat={card.cat} style={{ "--accent": card.accent }} onClick={() => handleSimCardClick(card)}>
-                  {inner}
-                </article>
-              );
-            })}
+            {LABS.map((lab) => (
+              <Link key={lab.slug} href={labHref(lab)} className="sim-card tilt" data-cat={lab.cat} style={{ "--accent": lab.accent }}>
+                <div className="sim-icon">{lab.icon}</div>
+                <h3>{lab.title}{lab.live ? <span className="sim-live">Live</span> : <span className="sim-soon">Preview</span>}</h3>
+                <p>{lab.desc}</p>
+                <div className="sim-meta"><span>{lab.tags[0]}</span><span>{lab.tags[1]}</span></div>
+                <span className="sim-go">{lab.live ? "Open sandbox →" : "View preview →"}</span>
+              </Link>
+            ))}
           </div>
         </section>
 
@@ -688,141 +452,7 @@ export default function HomeClient() {
         </section>
       </main>
 
-      <footer className="footer">
-        <div className="footer-grid">
-          <div className="footer-brand">
-            <a className="brand" href="#top">
-              <span className="brand-mark" aria-hidden="true">
-                <svg viewBox="0 0 48 48" width="26" height="26">
-                  <g fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                    <circle cx="24" cy="24" r="4.5" fill="currentColor" stroke="none" />
-                    <ellipse cx="24" cy="24" rx="19" ry="8" />
-                    <ellipse cx="24" cy="24" rx="19" ry="8" transform="rotate(60 24 24)" />
-                    <ellipse cx="24" cy="24" rx="19" ry="8" transform="rotate(120 24 24)" />
-                  </g>
-                </svg>
-              </span>
-              <span className="brand-text">Experi<b>verse</b></span>
-            </a>
-            <p>Interactive science simulations for the next generation of explorers.</p>
-          </div>
-          <div className="footer-col">
-            <h4>Explore</h4>
-            <a href="#simulations">Simulations</a>
-            <a href="#features">Platform</a>
-            <a href="#showcase">Live demo</a>
-          </div>
-          <div className="footer-col">
-            <h4>Company</h4>
-            <a href="#">About</a>
-            <a href="#">Research</a>
-            <a href="#">Careers</a>
-          </div>
-          <div className="footer-col">
-            <h4>Connect</h4>
-            <a href="#">Twitter / X</a>
-            <a href="#">GitHub</a>
-            <a href="#">Discord</a>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <span>© 2026 Experiverse. Made with curiosity.</span>
-          <span className="footer-badge">◈ Rendered in real time</span>
-        </div>
-      </footer>
-
-      <div className={"sheet-root" + (sheetOpen ? " open" : "")} inert={!sheetOpen}>
-        <div className="sheet-backdrop" onClick={() => setSheetOpen(false)} aria-hidden="true"></div>
-        <div
-          className="sheet"
-          ref={sheetRef}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Menu"
-          onTouchStart={onSheetTouchStart}
-          onTouchMove={onSheetTouchMove}
-          onTouchEnd={onSheetTouchEnd}
-        >
-          <div className="sheet-grabber" aria-hidden="true"></div>
-          <div className="sheet-head">
-            <span className="brand-text">Experi<b>verse</b></span>
-            <button className="sheet-close" aria-label="Close menu" onClick={() => setSheetOpen(false)}>
-              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" /></svg>
-            </button>
-          </div>
-
-          <p className="sheet-label">Disciplines</p>
-          <div className="sheet-grid">
-            {DISCIPLINES.map((d) => (
-              <button key={d.key} className={"sheet-tile icon-" + d.key} onClick={() => sheetGo("simulations")}>
-                <span className="nav-dropdown-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="22" height="22">{d.icon}</svg>
-                </span>
-                <span>{d.title}</span>
-              </button>
-            ))}
-          </div>
-
-          <p className="sheet-label">Jump to</p>
-          <div className="sheet-group">
-            {[
-              ["simulations", "🧪", "Simulations"],
-              ["features", "⚙️", "Platform"],
-              ["showcase", "🎮", "Live demo"],
-              ["stats", "📈", "Impact"],
-            ].map(([id, ico, label]) => (
-              <button key={id} className="sheet-row" onClick={() => sheetGo(id)}>
-                <span className="sheet-row-ico" aria-hidden="true">{ico}</span>
-                <span className="sheet-row-text">{label}</span>
-                <span className="sheet-chev" aria-hidden="true">›</span>
-              </button>
-            ))}
-          </div>
-
-          <p className="sheet-label">Preferences</p>
-          <div className="sheet-group">
-            <button className="sheet-row" role="switch" aria-checked={theme === "light"} onClick={toggleTheme}>
-              <span className="sheet-row-ico" aria-hidden="true">◑</span>
-              <span className="sheet-row-text">Light mode</span>
-              <span className={"switch" + (theme === "light" ? " on" : "")} aria-hidden="true"></span>
-            </button>
-            <button className="sheet-row" role="switch" aria-checked={sound.enabled} onClick={toggleSound}>
-              <span className="sheet-row-ico" aria-hidden="true">{sound.enabled ? "🔊" : "🔇"}</span>
-              <span className="sheet-row-text">Sound effects</span>
-              <span className={"switch" + (sound.enabled ? " on" : "")} aria-hidden="true"></span>
-            </button>
-            <div className="sheet-row">
-              <span className="sheet-row-ico" aria-hidden="true">🎨</span>
-              <span className="sheet-row-text">Accent</span>
-              <span className="swatches" role="radiogroup" aria-label="Accent color">
-                {PALETTES.map((p, i) => (
-                  <button
-                    key={p.name}
-                    role="radio"
-                    aria-checked={accentIdx === i}
-                    aria-label={p.name}
-                    className={"swatch" + (accentIdx === i ? " on" : "")}
-                    style={{ background: `linear-gradient(135deg, ${p.a}, ${p.b})` }}
-                    onClick={() => pickAccent(i)}
-                  ></button>
-                ))}
-              </span>
-            </div>
-            <button className="sheet-row" onClick={() => { setSheetOpen(false); setCmdkOpen(true); }}>
-              <span className="sheet-row-ico" aria-hidden="true">⌕</span>
-              <span className="sheet-row-text">Search actions</span>
-              <span className="sheet-chev" aria-hidden="true">›</span>
-            </button>
-          </div>
-
-          <a href="/simulations/bio" className="btn btn-primary btn-lg sheet-cta">Open a live lab <span aria-hidden="true">→</span></a>
-        </div>
-      </div>
-
-      <MobileTabBar items={tabs} label="Experiverse sections" />
-
-      <CommandPalette open={cmdkOpen} onClose={() => setCmdkOpen(false)} commands={commands} />
-      <Toast ref={toastRef} />
+      <SiteFooter home />
     </div>
   );
 }

@@ -67,3 +67,6 @@ body { -webkit-tap-highlight-color: transparent; }
 @media (prefers-reduced-motion: reduce) {
   .mtab { animation: none; }
 }
+
+/* each page theme scopes its own resets, so the browser's default body margin is cleared here */
+html, body { margin: 0; padding: 0; }

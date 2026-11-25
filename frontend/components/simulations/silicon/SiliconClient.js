@@ -102,7 +102,7 @@ export default function SiliconClient() {
   }
 
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} className="theme-silicon">
       <CircuitBackground />
       <div className="scanlines" aria-hidden="true"></div>
       <div className="vignette" aria-hidden="true"></div>

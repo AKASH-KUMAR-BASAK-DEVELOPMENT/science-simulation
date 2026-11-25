@@ -1,0 +1,268 @@
+/* ============================================================
+   Lab overview pages (/simulations/[slug])
+   Header, footer, buttons, sections and CTA come from app/home.css;
+   this file only adds the lab-specific pieces (all prefixed lp-).
+   ============================================================ */
+
+.theme-home.lp { --lab: var(--accent); }
+.theme-home.lp::before {
+  content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  background:
+    radial-gradient(55% 45% at 80% 8%, color-mix(in srgb, var(--lab) 24%, transparent), transparent 65%),
+    radial-gradient(40% 40% at 5% 60%, color-mix(in srgb, var(--lab) 10%, transparent), transparent 70%);
+}
+.theme-home.lp .grad-text {
+  background-image: linear-gradient(110deg, var(--lab) 0%, var(--accent-2) 50%, var(--accent-3) 100%);
+}
+
+/* ---------- hero ---------- */
+.theme-home .lp-hero {
+  max-width: var(--maxw); margin: 0 auto;
+  padding: clamp(7rem, 15vh, 9.5rem) clamp(1rem, 4vw, 2rem) 4rem;
+  display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 3rem; align-items: center;
+}
+.theme-home .lp-crumbs { display: flex; gap: 0.5rem; font-size: 0.85rem; color: var(--text-faint); margin-bottom: 1.1rem; }
+.theme-home .lp-crumbs a { color: var(--text-dim); transition: color 0.2s; }
+.theme-home .lp-crumbs a:hover { color: var(--lab); }
+.theme-home .lp-hero .pill-dot { background: var(--lab); }
+.theme-home .lp-title { font-size: clamp(2.6rem, 6vw, 4.4rem); margin-bottom: 1.3rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.2em 0.35em; }
+.theme-home .lp-title-icon {
+  display: inline-grid; place-items: center; width: 1.35em; height: 1.35em; font-size: 0.8em;
+  border-radius: 0.32em;
+  background: color-mix(in srgb, var(--lab) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--lab) 40%, transparent);
+  box-shadow: 0 14px 34px -14px color-mix(in srgb, var(--lab) 80%, transparent);
+}
+.theme-home .lp-sub { color: var(--text-dim); font-size: 1.1rem; max-width: 52ch; margin-bottom: 2rem; }
+.theme-home .lp-meta { list-style: none; display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.theme-home .lp-meta li {
+  display: flex; flex-direction: column; padding: 0.6rem 1rem; border-radius: 14px;
+  border: 1px solid var(--border); background: var(--surface); backdrop-filter: blur(10px);
+}
+.theme-home .lp-meta span { font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); }
+.theme-home .lp-meta b { font-family: "Space Grotesk", sans-serif; font-weight: 600; font-size: 0.95rem; }
+
+/* hero artwork: an illustration of the topic, framed like a planet */
+.theme-home .lp-art { position: relative; display: grid; place-items: center; min-height: 460px; }
+.theme-home .lp-art-frame {
+  position: relative; width: min(440px, 100%); aspect-ratio: 1; border-radius: 50%; overflow: hidden;
+  background: radial-gradient(circle at 50% 45%, #0f1336, #05060f 72%);
+  border: 1px solid color-mix(in srgb, var(--lab) 40%, transparent);
+  box-shadow:
+    0 0 0 14px color-mix(in srgb, var(--lab) 6%, transparent),
+    0 0 0 15px color-mix(in srgb, var(--lab) 18%, transparent),
+    0 40px 100px -30px color-mix(in srgb, var(--lab) 55%, transparent);
+}
+.theme-home .lp-art-frame::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(60% 40% at 30% 18%, rgba(255, 255, 255, 0.12), transparent 60%);
+}
+.theme-home .lp-art .sd-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.theme-home .lp-fc { z-index: 2; }
+.theme-home .lp-fc-1 { top: 6%; left: -2%; }
+.theme-home .lp-fc-2 { bottom: 12%; right: -2%; animation-delay: 1.5s; }
+.theme-home .lp-fc-3 { bottom: 0; left: 10%; animation-delay: 3s; }
+.theme-home .lp-fc-expr { font-family: "Fraunces", Georgia, serif; font-style: italic; color: var(--lab); }
+
+/* hero artwork motion (the SVG scenes from SimPreview) */
+.theme-home .sd-svg .sd-stars circle { fill: #fff; opacity: 0.5; animation: sd-twinkle 4s ease-in-out infinite; }
+.theme-home .sd-svg .sd-drift { animation: sd-drift 6s ease-in-out infinite alternate; }
+.theme-home .sd-svg .sd-spin { transform-box: fill-box; transform-origin: center; animation: sd-rot 40s linear infinite; }
+.theme-home .sd-svg .sd-pulse { transform-box: fill-box; transform-origin: center; animation: sd-pulse 3.5s ease-in-out infinite; }
+.theme-home .sd-svg .sd-tumble { animation: sd-tumble 9s ease-in-out infinite; }
+.theme-home .sd-svg .sd-bubble { animation: sd-bubble 6s linear infinite; }
+.theme-home .sd-svg .sd-ripple { transform-box: fill-box; transform-origin: center; animation: sd-ripple 4s linear infinite; }
+.theme-home .sd-svg .sd-packet { animation: sd-packet 6s ease-in-out infinite; }
+.theme-home .sd-svg .sd-transmit { animation: sd-transmit 6s ease-in-out infinite; }
+.theme-home .sd-svg .sd-draw { stroke-dasharray: 320; animation: sd-draw 5s ease-in-out infinite; }
+.theme-home .sd-svg .sd-arrow-text { fill: rgba(255, 255, 255, 0.5); font: 700 44px "Space Grotesk", sans-serif; }
+.theme-home .sd-svg .sd-mini { fill: rgba(238, 241, 255, 0.75); font: 600 15px "Space Grotesk", sans-serif; }
+
+@keyframes sd-twinkle { 50% { opacity: 0.12; } }
+@keyframes sd-drift { to { transform: translate(var(--dx), var(--dy)); } }
+@keyframes sd-rot { to { transform: rotate(360deg); } }
+@keyframes sd-pulse { 50% { transform: scale(1.12); opacity: 0.85; } }
+@keyframes sd-tumble {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(14px, -10px) rotate(40deg); }
+  66% { transform: translate(-10px, 12px) rotate(-25deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+@keyframes sd-bubble { from { transform: translateY(0); opacity: 0.8; } to { transform: translateY(-420px); opacity: 0; } }
+@keyframes sd-ripple { from { transform: scale(0.02); opacity: 0.9; } to { transform: scale(1); opacity: 0; } }
+@keyframes sd-packet {
+  0% { transform: translateX(130px); opacity: 0; }
+  12% { opacity: 1; }
+  60% { transform: translateX(330px); opacity: 1; }
+  80%, 100% { transform: translateX(250px); opacity: 0; }
+}
+@keyframes sd-transmit { 0%, 55% { opacity: 0; } 70% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes sd-draw { 0% { stroke-dashoffset: 320; } 60%, 100% { stroke-dashoffset: 0; } }
+
+/* ---------- explore ---------- */
+.theme-home .lp-explore { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem; }
+.theme-home .lp-card {
+  position: relative; padding: 1.8rem 1.5rem; border-radius: var(--radius);
+  border: 1px solid var(--border); background: var(--surface); overflow: hidden;
+  transition: transform 0.4s var(--ease), border-color 0.4s;
+}
+.theme-home .lp-card::before {
+  content: ""; position: absolute; inset: 0; opacity: 0; transition: opacity 0.45s var(--ease);
+  background: radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--lab) 20%, transparent), transparent 60%);
+}
+.theme-home .lp-card:hover { transform: translateY(-8px); border-color: color-mix(in srgb, var(--lab) 50%, transparent); }
+.theme-home .lp-card:hover::before { opacity: 1; }
+.theme-home .lp-card > * { position: relative; }
+.theme-home .lp-card-num { position: absolute; top: 1.2rem; right: 1.3rem; font: 700 0.85rem "Space Grotesk", sans-serif; color: var(--text-faint); }
+.theme-home .lp-card-ico {
+  display: grid; place-items: center; width: 56px; height: 56px; border-radius: 16px; font-size: 1.7rem;
+  background: color-mix(in srgb, var(--lab) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--lab) 30%, transparent);
+  margin-bottom: 1.2rem; transition: transform 0.4s var(--ease);
+}
+.theme-home .lp-card:hover .lp-card-ico { transform: scale(1.08) rotate(-6deg); }
+.theme-home .lp-card h3 { font-size: 1.2rem; margin-bottom: 0.45rem; }
+.theme-home .lp-card p { color: var(--text-dim); font-size: 0.94rem; }
+
+/* ---------- science ---------- */
+.theme-home .lp-science { display: grid; grid-template-columns: 1.2fr 1fr; gap: 1.3rem; }
+.theme-home .lp-formula {
+  position: relative; overflow: hidden; padding: clamp(2rem, 5vw, 3rem); border-radius: 28px;
+  border: 1px solid color-mix(in srgb, var(--lab) 35%, transparent);
+  background:
+    radial-gradient(90% 90% at 100% 0%, color-mix(in srgb, var(--lab) 24%, transparent), transparent 60%),
+    linear-gradient(160deg, var(--surface-strong), var(--surface));
+  display: flex; flex-direction: column; justify-content: center;
+}
+.theme-home .lp-expr {
+  font-family: "Fraunces", Georgia, serif; font-style: italic; font-weight: 600;
+  font-size: clamp(2.6rem, 6.5vw, 4.6rem); line-height: 1.05; margin-bottom: 0.6rem;
+  background: linear-gradient(110deg, var(--text), var(--lab)); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.theme-home .lp-expr-caption { color: var(--text-dim); font-size: 1.05rem; margin-bottom: 1.5rem; }
+.theme-home .lp-terms { list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.theme-home .lp-terms li {
+  font-size: 0.88rem; color: var(--text-dim); padding: 0.4em 0.85em; border-radius: 12px;
+  background: var(--surface-strong); border: 1px solid var(--border);
+}
+.theme-home .lp-terms b { color: var(--lab); font-family: "Fraunces", Georgia, serif; font-style: italic; margin-right: 0.3em; }
+.theme-home .lp-vars { padding: clamp(1.6rem, 4vw, 2.2rem); border-radius: 28px; border: 1px solid var(--border); background: var(--surface); }
+.theme-home .lp-vars h3 { font-size: 1.15rem; margin-bottom: 1.1rem; }
+.theme-home .lp-vars ul { list-style: none; display: grid; gap: 0.6rem; }
+.theme-home .lp-vars li {
+  display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  padding: 0.85rem 1rem; border-radius: 14px; background: var(--surface-strong); border: 1px solid var(--border);
+}
+.theme-home .lp-var-name { font-weight: 600; }
+.theme-home .lp-var-name::before {
+  content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.6rem;
+  background: var(--lab); box-shadow: 0 0 10px var(--lab); vertical-align: middle;
+}
+.theme-home .lp-var-range { font-family: "Space Grotesk", sans-serif; color: var(--text-dim); font-size: 0.9rem; white-space: nowrap; }
+
+/* ---------- real world ---------- */
+.theme-home .lp-real { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.3rem; }
+.theme-home .lp-real-card {
+  position: relative; padding: 2rem 1.7rem; border-radius: 26px; overflow: hidden;
+  border: 1px solid var(--border);
+  background: linear-gradient(170deg, color-mix(in srgb, var(--lab) 10%, transparent), var(--surface) 55%);
+  transition: transform 0.4s var(--ease), border-color 0.4s;
+}
+.theme-home .lp-real-card:hover { transform: translateY(-6px); border-color: color-mix(in srgb, var(--lab) 45%, transparent); }
+.theme-home .lp-real-ico { font-size: 2.6rem; display: block; margin-bottom: 1rem; }
+.theme-home .lp-real-card h3 { font-size: 1.25rem; margin-bottom: 0.45rem; }
+.theme-home .lp-real-card p { color: var(--text-dim); font-size: 0.95rem; }
+
+/* ---------- facts ---------- */
+.theme-home .lp-facts {
+  display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 2.5rem; align-items: center;
+  padding: clamp(2rem, 5vw, 3.2rem); border-radius: 30px;
+  border: 1px solid var(--border); background: var(--surface);
+}
+.theme-home .lp-facts-head h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); }
+.theme-home .lp-facts ol { list-style: none; counter-reset: f; display: grid; gap: 1.1rem; }
+.theme-home .lp-facts li { counter-increment: f; display: grid; grid-template-columns: 40px 1fr; gap: 1rem; align-items: start; color: var(--text-dim); }
+.theme-home .lp-facts li::before {
+  content: counter(f); display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px;
+  font: 700 1rem "Space Grotesk", sans-serif; color: #fff;
+  background: linear-gradient(135deg, var(--lab), var(--accent-2));
+}
+
+/* ---------- CTA ---------- */
+.theme-home .lp-cta-ico { display: block; font-size: 2.8rem; margin-bottom: 0.8rem; }
+
+/* ---------- related ---------- */
+.theme-home .lp-related { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+.theme-home .lp-rel {
+  position: relative; display: flex; flex-direction: column; gap: 0.45rem;
+  padding: 1.4rem; border-radius: 22px; border: 1px solid var(--border); background: var(--surface);
+  transition: transform 0.35s var(--ease), border-color 0.35s;
+}
+.theme-home .lp-rel:hover { transform: translateY(-6px); border-color: color-mix(in srgb, var(--lab) 55%, transparent); }
+.theme-home .lp-rel-ico {
+  width: 52px; height: 52px; display: grid; place-items: center; font-size: 1.6rem; border-radius: 15px;
+  background: color-mix(in srgb, var(--lab) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--lab) 30%, transparent); margin-bottom: 0.4rem;
+}
+.theme-home .lp-rel-title { font-family: "Space Grotesk", sans-serif; font-weight: 600; font-size: 1.05rem; display: flex; align-items: center; flex-wrap: wrap; }
+.theme-home .lp-rel .sim-live { color: var(--lab); background: color-mix(in srgb, var(--lab) 16%, transparent); border-color: color-mix(in srgb, var(--lab) 35%, transparent); }
+.theme-home .lp-rel-desc { color: var(--text-dim); font-size: 0.86rem; line-height: 1.45; }
+.theme-home .lp-rel-go { position: absolute; top: 1.2rem; right: 1.3rem; font-size: 1.5rem; color: var(--text-faint); transition: transform 0.3s var(--ease), color 0.3s; }
+.theme-home .lp-rel:hover .lp-rel-go { transform: translateX(4px); color: var(--lab); }
+
+/* ---------- responsive ---------- */
+@media (max-width: 980px) {
+  .theme-home .lp-hero { grid-template-columns: 1fr; gap: 1.5rem; }
+  .theme-home .lp-art { order: -1; min-height: 380px; }
+  .theme-home .lp-explore { grid-template-columns: repeat(2, 1fr); }
+  .theme-home .lp-science, .theme-home .lp-facts { grid-template-columns: 1fr; }
+  .theme-home .lp-real { grid-template-columns: 1fr 1fr 1fr; }
+}
+
+@media (hover: none) {
+  .theme-home .lp-card:hover, .theme-home .lp-real-card:hover, .theme-home .lp-rel:hover { transform: none; }
+  .theme-home .lp-card:active, .theme-home .lp-rel:active { transform: scale(0.98); }
+}
+
+@media (max-width: 768px) {
+  .theme-home .lp-hero { padding: calc(70px + env(safe-area-inset-top)) 16px 2rem; gap: 1rem; }
+  .theme-home .lp-art { min-height: 0; padding: 10px 0 6px; }
+  .theme-home .lp-art-frame { width: min(270px, 72vw); }
+  .theme-home .float-card.lp-fc { display: flex; padding: 0.5rem 0.75rem; }
+  .theme-home .lp-fc .fc-label { font-size: 0.6rem; }
+  .theme-home .lp-fc .fc-value { font-size: 1rem; }
+  .theme-home .lp-fc-1 { top: 0; left: 0; }
+  .theme-home .lp-fc-2 { bottom: 4%; right: 0; }
+  .theme-home .lp-fc-3 { display: none !important; }
+  .theme-home .lp-crumbs { font-size: 0.8rem; margin-bottom: 0.9rem; }
+  .theme-home .lp-title { font-size: clamp(2.1rem, 10vw, 2.8rem); margin-bottom: 1rem; }
+  .theme-home .lp-sub { font-size: 0.98rem; margin-bottom: 1.5rem; }
+  .theme-home .lp-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+  .theme-home .lp-meta li:last-child { grid-column: 1 / -1; }
+
+  /* explore + real world: swipeable cards */
+  .theme-home .lp-explore, .theme-home .lp-real {
+    display: flex; overflow-x: auto; gap: 12px; margin: 0 -16px; padding: 4px 16px 14px;
+    scroll-snap-type: x mandatory; scroll-padding: 0 16px; scrollbar-width: none;
+  }
+  .theme-home .lp-explore::-webkit-scrollbar, .theme-home .lp-real::-webkit-scrollbar { display: none; }
+  .theme-home .lp-card, .theme-home .lp-real-card { flex: 0 0 74%; scroll-snap-align: start; padding: 1.4rem; border-radius: 22px; }
+
+  .theme-home .lp-formula, .theme-home .lp-vars { border-radius: 24px; padding: 1.5rem; }
+  .theme-home .lp-expr { font-size: clamp(1.9rem, 8.6vw, 2.6rem); white-space: nowrap; }
+  .theme-home .lp-vars li { padding: 0.75rem 0.85rem; }
+  .theme-home .lp-facts { padding: 1.5rem; border-radius: 24px; gap: 1.2rem; }
+  .theme-home .lp-facts li { grid-template-columns: 34px 1fr; font-size: 0.93rem; }
+  .theme-home .lp-facts li::before { width: 34px; height: 34px; border-radius: 10px; }
+
+  /* related: list rows like the home lab list */
+  .theme-home .lp-related { grid-template-columns: 1fr; gap: 10px; }
+  .theme-home .lp-rel {
+    display: grid; grid-template-columns: 52px 1fr 18px; grid-template-areas: "ico title go" "ico desc go";
+    column-gap: 14px; row-gap: 2px; align-items: center; padding: 14px; border-radius: 20px;
+  }
+  .theme-home .lp-rel-ico { grid-area: ico; margin: 0; }
+  .theme-home .lp-rel-title { grid-area: title; font-size: 1rem; }
+  .theme-home .lp-rel-desc { grid-area: desc; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 0.83rem; }
+  .theme-home .lp-rel-go { position: static; grid-area: go; }
+}

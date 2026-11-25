@@ -92,7 +92,7 @@ export default function AuroraClient() {
         const el = document.getElementById(id);
         if (el) aio.observe(el);
       });
-      cleanups.push(() => aio.disconnect());
+      cleanups.push(() => { aio.disconnect(); document.documentElement.style.removeProperty("--accent"); });
     }
 
     function fmt(n) { return n >= 1000 ? Math.floor(n).toLocaleString() : String(Math.floor(n)); }
@@ -167,7 +167,7 @@ export default function AuroraClient() {
   }
 
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} className="theme-aurora">
       <AuroraBackground />
       <div className="grain" aria-hidden="true"></div>
       <GooCursor />

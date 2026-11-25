@@ -11,6 +11,7 @@ export default function useConfetti(colors = DEFAULT_COLORS) {
     return () => {
       const st = stateRef.current;
       if (st.raf) cancelAnimationFrame(st.raf);
+      if (st.onResize) window.removeEventListener("resize", st.onResize);
       st.canvas?.remove();
     };
   }, []);
@@ -22,6 +23,7 @@ export default function useConfetti(colors = DEFAULT_COLORS) {
     document.body.appendChild(st.canvas);
     st.cx = st.canvas.getContext("2d");
     size();
+    st.onResize = size;
     window.addEventListener("resize", size);
   }
   function size() {
